@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.http import HttpResponse
@@ -61,6 +61,13 @@ def create_task(request):
             'error':"Please provide vaid data"
         })
 
+
+def task_details(request, id):
+    task = get_object_or_404(Task, pk=id)
+    print(task)
+    return render(request, "task_details.html",{
+        'task':task
+    })
 
 def signout(request):
     logout(request)
