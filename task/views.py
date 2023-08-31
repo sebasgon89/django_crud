@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from django.contrib.auth import login, logout,authenticate
+from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
 from .forms import TaskForm
 from .models import Task
@@ -39,14 +39,15 @@ def signup(request):
 def tasks(request):
     tasks = Task.objects.filter(user=request.user)
 
-    return render(request, "tasks.html",{
+    return render(request, "tasks.html", {
         'tasks': tasks
     })
 
+
 def create_task(request):
     if request.method == "GET":
-        return render(request, "create_task.html",{
-            'form':TaskForm
+        return render(request, "create_task.html", {
+            'form': TaskForm
         })
     else:
         try:
@@ -56,18 +57,32 @@ def create_task(request):
             new_task.save()
             return redirect("tasks")
         except ValueError:
-            return render(request, "create_task.html",{
-            'form':TaskForm,
-            'error':"Please provide vaid data"
-        })
+            return render(request, "create_task.html", {
+                'form': TaskForm,
+                'error': "Please provide vaid data"
+            })
 
 
 def task_details(request, id):
-    task = get_object_or_404(Task, pk=id)
-    print(task)
-    return render(request, "task_details.html",{
-        'task':task
-    })
+    if request.method == "GET":
+        task = get_object_or_404(Task, pk=id, user=request.user)
+        form = TaskForm(instance=task)
+        return render(request, "task_details.html", {
+            'task': task,
+            'form': form
+        })
+    else:
+        try:
+            task = get_object_or_404(Task, pk=id, user=request.user)
+            form = TaskForm(request.POST, instance=task)
+            form.save()
+            return redirect("tasks")
+        except ValueError:
+            return render(request, "task_details.html", {
+            'task': task,
+            'form': form,
+            'errpr':"Error wth values"
+        })
 
 def signout(request):
     logout(request)
@@ -80,13 +95,14 @@ def signin(request):
             'form': AuthenticationForm
         })
     else:
-        user = authenticate (request, username=request.POST["username"], password=request.POST["password"])
+        user = authenticate(
+            request, username=request.POST["username"], password=request.POST["password"])
 
         if user is None:
-            return render(request, 'signin.html',{
-            'form':AuthenticationForm,
-            'error':'Username or password is incorrect'
-        })
+            return render(request, 'signin.html', {
+                'form': AuthenticationForm,
+                'error': 'Username or password is incorrect'
+            })
         else:
             login(request, user)
             return redirect("tasks")
