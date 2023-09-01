@@ -25,6 +25,7 @@ urlpatterns = [
     path('signup/', views.signup, name="signup"),
     path('tasks/', views.tasks, name="tasks"),
     path('tasks/create/', views.create_task, name="create_tasks"),
+    path('tasks/completed/', views.tasks_completed, name="tasks_completed"),
     path('tasks/<int:id>', views.task_details, name="task_details"),
     path('tasks/<int:id>/complete', views.task_complete, name="task_complete"),
     path('tasks/<int:id>/delete', views.task_delete, name="task_delete"),
