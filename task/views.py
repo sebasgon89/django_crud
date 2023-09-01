@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
+from django.utils import timezone
 from .forms import TaskForm
 from .models import Task
 
@@ -37,7 +38,7 @@ def signup(request):
 
 
 def tasks(request):
-    tasks = Task.objects.filter(user=request.user)
+    tasks = Task.objects.filter(user=request.user, datecompleted__isnull=True)
 
     return render(request, "tasks.html", {
         'tasks': tasks
@@ -62,6 +63,20 @@ def create_task(request):
                 'error': "Please provide vaid data"
             })
 
+
+def task_complete(request, id):
+    task = get_object_or_404(Task, pk=id, user=request.user)
+    if request.method == "POST":
+        task.datecompleted = timezone.now()
+        task.save()
+        return redirect("tasks")
+    
+
+def task_delete(request, id):
+    task = get_object_or_404(Task, pk=id, user=request.user)
+    if request.method == "POST":
+        task.delete()
+        return redirect("tasks")
 
 def task_details(request, id):
     if request.method == "GET":
