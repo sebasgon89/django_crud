@@ -7,6 +7,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 from .forms import TaskForm
 from .models import Task
+from django.contrib.auth.decorators import login_required
 
 
 def home(request):
@@ -37,6 +38,7 @@ def signup(request):
     })
 
 
+@login_required
 def tasks(request):
     tasks = Task.objects.filter(user=request.user, datecompleted__isnull=True)
 
@@ -44,7 +46,7 @@ def tasks(request):
         'tasks': tasks
     })
 
-
+@login_required
 def tasks_completed(request):
     tasks = Task.objects.filter(user=request.user, datecompleted__isnull=False).order_by('-datecompleted')
 
@@ -52,7 +54,7 @@ def tasks_completed(request):
         'tasks': tasks
     })
 
-
+@login_required
 def create_task(request):
     if request.method == "GET":
         return render(request, "create_task.html", {
@@ -71,7 +73,7 @@ def create_task(request):
                 'error': "Please provide vaid data"
             })
 
-
+@login_required
 def task_complete(request, id):
     task = get_object_or_404(Task, pk=id, user=request.user)
     if request.method == "POST":
@@ -79,13 +81,14 @@ def task_complete(request, id):
         task.save()
         return redirect("tasks")
     
-
+@login_required
 def task_delete(request, id):
     task = get_object_or_404(Task, pk=id, user=request.user)
     if request.method == "POST":
         task.delete()
         return redirect("tasks")
 
+@login_required
 def task_details(request, id):
     if request.method == "GET":
         task = get_object_or_404(Task, pk=id, user=request.user)
@@ -107,6 +110,7 @@ def task_details(request, id):
             'errpr':"Error wth values"
         })
 
+@login_required
 def signout(request):
     logout(request)
     return redirect("home")
